@@ -5,6 +5,8 @@ import torch.optim as optim
 from data import get_dataloaders
 import pandas as pd
 from twoLNN import twoLNN
+from utils import use_gpu_if_possible
+import argparse
 
 MODELS = {
     "twoLNN": twoLNN
@@ -14,8 +16,13 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
     # Prep data
     dataloaders = get_dataloaders(K, batch_size)
 
+    # get device
+    device = use_gpu_if_possible()
+
+    print(f"Using device : {device}")
+
     # Load model
-    model = MODELS[model_name](K)
+    model = MODELS[model_name](K).to(device)
     loss_function = nn.BCELoss()
     optimizer = optim.Adadelta(model.parameters(), lr=.01)
 
@@ -28,6 +35,9 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
         running_acc = 0.0
         for step, batch in enumerate(dataloaders['train']):
             X, Y = batch
+            
+            X = X.to(device)
+            Y = Y.to(device)
 
             out = torch.sigmoid(model.forward(X)).reshape(-1)
 
@@ -46,27 +56,31 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
                 running_loss = 0.0
 
         # Train evaluation
-        train_acc = list()
+        train_acc = 0
         for X, Y in dataloaders['train']:
+            X = X.to(device)
+            Y = Y.to(device)
+
             out = torch.sigmoid(model.forward(X)).reshape(-1)
-            acc = (out.round() == Y).sum() / len(Y) 
-            train_acc.append(acc)
+            train_acc += (out.round() == Y).sum()
 
         # Test Evalutaion
-        test_acc = list()
+        test_acc = 0
         for X, Y in dataloaders['test']:
+            X = X.to(device)
+            Y = Y.to(device)
+
             out = torch.sigmoid(model.forward(X)).reshape(-1)
-            acc = (out.round() == Y).sum() / len(Y) 
-            test_acc.append(acc)
+            test_acc += (out.round() == Y).sum()
 
-        mean_train_acc = torch.mean(torch.tensor(train_acc)).item()
-        mean_test_acc = torch.mean(torch.tensor(test_acc)).item()
+        test_acc = test_acc / len(dataloaders['test'])
+        train_acc = train_acc / len(dataloaders['train'])
 
-        new_results = pd.DataFrame({"epoch": e, "train_acc": mean_train_acc, "test_acc": mean_test_acc}, index=[0])
+        new_results = pd.DataFrame({"epoch": e, "train_acc": train_acc, "test_acc": test_acc}, index=[0])
         results = pd.concat([results, new_results])
 
-        print(f"TRAIN ACC = {mean_train_acc:.4f}")
-        print(f"TEST ACC  = {mean_test_acc:.4f}")
+        print(f"TRAIN ACC = {train_acc:.4f}")
+        print(f"TEST ACC  = {test_acc:.4f}")
         
     results_name = f'{task_name}_{model_name}_{K}_{batch_size}.csv'
     results_path = "results/" + results_name
@@ -76,7 +90,15 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
 
 if __name__ == "__main__":
 
-    Ks = [1,3]
+    parser = argparse.ArgumentParser()
+    parser.add_argument( "-model", "--model_name", default="twoLNN", type=str, help="model name")
+    parser.add_argument( "-task", "--task_name", default="parity", type=str, help="task name")
+    parser.add_argument( "-k", "--k_value", default=1, type=int, help="value of K")
 
-    for k in Ks:
-        train(model_name="twoLNN", task_name="parity", K=k)
+    args = parser.parse_args()
+    
+    k = args.k_value
+    task_name = args.task_name
+    model_name = args.model_name
+
+    train(model_name=model_name, task_name=task_name, K=k)
