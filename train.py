@@ -13,9 +13,6 @@ MODELS = {
 }
 
 def train(model_name, task_name, K, batch_size=128, nepochs=20):
-    # Prep data
-    dataloaders = get_dataloaders(K, batch_size)
-
     # get device
     device = use_gpu_if_possible()
 
@@ -31,7 +28,10 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
 
     # Start training
     for e in range(nepochs):
-        print(f"epoch {e}")
+        print(f"epoch: {e+1}")
+
+        # Prep data
+        dataloaders = get_dataloaders(K, batch_size)
 
         running_loss = 0.0
         train_acc = 0
@@ -41,7 +41,7 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
             X = X.to(device)
             Y = Y.to(device)
 
-            out = torch.sigmoid(model.forward(X)).reshape(-1)
+            out = torch.sigmoid(model(X)).reshape(-1)
 
             loss = loss_function(out, Y)
 
@@ -58,13 +58,13 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
             X = X.to(device)
             Y = Y.to(device)
 
-            out = torch.sigmoid(model.forward(X)).reshape(-1)
+            out = torch.sigmoid(model(X)).reshape(-1)
             test_acc += (out.round() == Y).sum()
 
         train_acc = train_acc / len(dataloaders['train'].dataset)
         test_acc = test_acc / len(dataloaders['test'].dataset)
 
-        new_results = pd.DataFrame({"epoch": e, "train_acc": train_acc, "test_acc": test_acc}, index=[0])
+        new_results = pd.DataFrame({"epoch": e, "train_acc": train_acc.item(), "test_acc": test_acc.item()}, index=[0])
         results = pd.concat([results, new_results])
 
         print(f"\tTrain acc = {train_acc:.4f}")
