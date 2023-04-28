@@ -24,8 +24,8 @@ class MnistKDataset(Dataset):
     
 def get_dataloaders(K, batch_size):
     data_sets = {
-        "train": datasets.MNIST(root="~/datasets/mnist", train=True, download=True),
-        "test": datasets.MNIST(root="~/datasets/mnist", train=False, download=True)
+        "train": datasets.MNIST(root="datasets/mnist", train=True, download=True),
+        "test": datasets.MNIST(root="datasets/mnist", train=False, download=True)
         }
     
     dataloaders = {
@@ -39,8 +39,8 @@ def load_data(ntrain, ntest):
     modes = ["train", "test"]
 
     data_sets = {
-        "train": datasets.MNIST(root="~/datasets/mnist", train=True, download=True),
-        "test": datasets.MNIST(root="~/datasets/mnist", train=False, download=True)
+        "train": datasets.MNIST(root="/datasets/mnist", train=True, download=True),
+        "test": datasets.MNIST(root="/datasets/mnist", train=False, download=True)
         }
     
     if ntest is None:
