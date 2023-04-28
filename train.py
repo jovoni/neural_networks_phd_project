@@ -31,9 +31,11 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
 
     # Start training
     for e in range(nepochs):
+        print(f"epoch {e}")
+
         running_loss = 0.0
-        running_acc = 0.0
-        for step, batch in enumerate(dataloaders['train']):
+        train_acc = 0
+        for _, batch in enumerate(dataloaders['train']):
             X, Y = batch
             
             X = X.to(device)
@@ -48,12 +50,7 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
             optimizer.step()
 
             running_loss += loss.item()
-            running_acc += (out.round() == Y).sum() / len(Y)
-
-            if step % 20 == 19: 
-                print(f'{e + 1}, {step + 1}, loss = {running_loss / 20}, acc = {running_acc / 20}')
-                running_acc = 0.0
-                running_loss = 0.0
+            train_acc += (out.round() == Y).sum()
 
         # Test Evalutaion
         test_acc = 0
@@ -64,13 +61,14 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
             out = torch.sigmoid(model.forward(X)).reshape(-1)
             test_acc += (out.round() == Y).sum()
 
-        test_acc = test_acc / len(dataloaders['test'])
+        train_acc = train_acc / len(dataloaders['train'].dataset)
+        test_acc = test_acc / len(dataloaders['test'].dataset)
 
-        new_results = pd.DataFrame({"epoch": e, "train_acc": running_acc, "test_acc": test_acc}, index=[0])
+        new_results = pd.DataFrame({"epoch": e, "train_acc": train_acc, "test_acc": test_acc}, index=[0])
         results = pd.concat([results, new_results])
 
-        print(f"TRAIN ACC = {running_acc:.4f}")
-        print(f"TEST ACC  = {test_acc:.4f}")
+        print(f"\tTrain acc = {train_acc:.4f}")
+        print(f"\tTest acc  = {test_acc:.4f}")
         
     results_name = f'{task_name}_{model_name}_{K}_{batch_size}.csv'
     results_path = "results/" + results_name
