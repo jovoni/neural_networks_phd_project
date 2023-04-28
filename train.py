@@ -55,15 +55,6 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
                 running_acc = 0.0
                 running_loss = 0.0
 
-        # Train evaluation
-        train_acc = 0
-        for X, Y in dataloaders['train']:
-            X = X.to(device)
-            Y = Y.to(device)
-
-            out = torch.sigmoid(model.forward(X)).reshape(-1)
-            train_acc += (out.round() == Y).sum()
-
         # Test Evalutaion
         test_acc = 0
         for X, Y in dataloaders['test']:
@@ -74,12 +65,11 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
             test_acc += (out.round() == Y).sum()
 
         test_acc = test_acc / len(dataloaders['test'])
-        train_acc = train_acc / len(dataloaders['train'])
 
-        new_results = pd.DataFrame({"epoch": e, "train_acc": train_acc, "test_acc": test_acc}, index=[0])
+        new_results = pd.DataFrame({"epoch": e, "train_acc": running_acc, "test_acc": test_acc}, index=[0])
         results = pd.concat([results, new_results])
 
-        print(f"TRAIN ACC = {train_acc:.4f}")
+        print(f"TRAIN ACC = {running_acc:.4f}")
         print(f"TEST ACC  = {test_acc:.4f}")
         
     results_name = f'{task_name}_{model_name}_{K}_{batch_size}.csv'
