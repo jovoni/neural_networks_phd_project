@@ -12,7 +12,7 @@ MODELS = {
     "twoLNN": twoLNN
 }
 
-def train(model_name, task_name, K, batch_size=128, nepochs=20):
+def train(model_name, task_name, K, batch_size=128, nepochs=20, lr=.01):
     # get device
     device = use_gpu_if_possible()
 
@@ -21,7 +21,7 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
     # Load model
     model = MODELS[model_name](K).to(device)
     loss_function = nn.BCELoss()
-    optimizer = optim.Adadelta(model.parameters(), lr=.01)
+    optimizer = optim.Adadelta(model.parameters(), lr=lr)
 
     # Init results table
     results = pd.DataFrame()
@@ -70,9 +70,15 @@ def train(model_name, task_name, K, batch_size=128, nepochs=20):
         print(f"\tTrain acc = {train_acc:.4f}")
         print(f"\tTest acc  = {test_acc:.4f}")
         
-    results_name = f'{task_name}_{model_name}_{K}_{batch_size}.csv'
-    results_path = "results/" + results_name
+    # save results
+    name = f'{task_name}_{model_name}_{K}_{lr}_{batch_size}_{nepochs}'
+
+    results_path = "results/" + name + ".csv"
     results.to_csv(results_path, sep=",")
+
+    # save model
+    model_path = "models/" + name + ".pt"
+    torch.save(model.state_dict(), model_path)
     
     print("DONE") 
 
@@ -82,11 +88,13 @@ if __name__ == "__main__":
     parser.add_argument( "-model", "--model_name", default="twoLNN", type=str, help="model name")
     parser.add_argument( "-task", "--task_name", default="parity", type=str, help="task name")
     parser.add_argument( "-k", "--k_value", default=1, type=int, help="value of K")
+    parser.add_argument( "-lr", "--lr_value", default=.01, type=float, help="value of learning rate")
 
     args = parser.parse_args()
     
     k = args.k_value
+    lr = args.lr_value
     task_name = args.task_name
     model_name = args.model_name
 
-    train(model_name=model_name, task_name=task_name, K=k)
+    train(model_name=model_name, task_name=task_name, K=k, lr=lr)
