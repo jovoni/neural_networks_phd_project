@@ -5,8 +5,8 @@ class twoLNN(nn.Module):
 
     def __init__(self, K):
         # K inidicating the number of MNIST images
-
         super(twoLNN, self).__init__()
+
         self.K = K
 
         self.first_section = nn.Sequential(
@@ -29,13 +29,18 @@ class twoLNN(nn.Module):
         x = self.classification(x)
         return(x)
     
+    def extract_representation(self, x):
+        x = x.view(-1, 28*28*self.K)
+        x = self.first_section(x)
+        return(x)
+    
 
 class fiveLNN(nn.Module):
 
     def __init__(self, K):
         # K inidicating the number of MNIST images
-
         super(fiveLNN, self).__init__()
+        
         self.K = K
 
         self.first_section = nn.Sequential(
@@ -62,4 +67,9 @@ class fiveLNN(nn.Module):
         x = x.view(-1, 28*28*self.K)
         x = self.first_section(x)
         x = self.classification(x)
+        return(x)
+    
+    def extract_representation(self, x):
+        x = x.view(-1, 28*28*self.K)
+        x = self.first_section(x)
         return(x)
