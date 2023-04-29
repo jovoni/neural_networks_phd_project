@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from data import get_dataloaders
 import pandas as pd
-from twoLNN import twoLNN, fiveLNN
+from models import twoLNN, fiveLNN
 from utils import use_gpu_if_possible
 import argparse
 
