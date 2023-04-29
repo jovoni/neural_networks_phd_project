@@ -8,6 +8,9 @@ from models import twoLNN, fiveLNN, LeNet
 from utils import use_gpu_if_possible
 import argparse
 
+LR_PARITY = 0.05
+LR_CLASSIFICATION = 0.05
+
 MODELS = {
     "twoLNN": twoLNN,
     "fiveLNN": fiveLNN,
@@ -85,20 +88,24 @@ def train_parity(model_name, K, batch_size=128, nepochs=20, lr=.01):
     print("DONE") 
 
 
-def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01):
+
+def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01, from_scratch = False):
     # get device
     device = use_gpu_if_possible()
     device = "cpu"
 
     print(f"Using device : {device}")
-
-    # Load model freezing certain parameters
-    trained_model_path = f'models/parity_{model_name}_{K}_{lr}_{batch_size}_{nepochs}.pt'
+    
     model = MODELS[model_name](K).to(device)
-    model.load_state_dict(torch.load(trained_model_path))
-    for name, param in model.named_parameters():
-        if name.startswith("first"):
-            param.requires_grad=False
+    task = "from-scratch-classification"
+    if not from_scratch : 
+        task = "classification"
+        # Load pre-trained model freezing certain parameters
+        trained_model_path = f'models/parity_{model_name}_{K}_{LR_PARITY}_{batch_size}_{nepochs}.pt'
+        model.load_state_dict(torch.load(trained_model_path))
+        for name, param in model.named_parameters():
+            if name.startswith("first"):
+                param.requires_grad=False
     
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -151,7 +158,7 @@ def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01):
         print(f"\tTest acc  = {test_acc:.4f}")
         
     # save results
-    name = f'classification_{model_name}_{K}_{lr}_{batch_size}_{nepochs}'
+    name = f'{task}_{model_name}_{K}_{lr}_{batch_size}_{nepochs}'
 
     results_path = "results/" + name + ".csv"
     results.to_csv(results_path, sep=",")
@@ -162,6 +169,7 @@ def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01):
     
     print("DONE") 
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -169,6 +177,7 @@ if __name__ == "__main__":
     parser.add_argument( "-task", "--task_name", default="parity", type=str, help="task name")
     parser.add_argument( "-k", "--k_value", default=1, type=int, help="value of K")
     parser.add_argument( "-lr", "--lr_value", default=.01, type=float, help="value of learning rate")
+    parser.add_argument( "-scratch", "--scratch_bool", default=False, type=bool, help="if learning should be from scratch")
 
     args = parser.parse_args()
     
@@ -176,8 +185,9 @@ if __name__ == "__main__":
     lr = args.lr_value
     task_name = args.task_name
     model_name = args.model_name
+    from_scratch = args.scratch_bool
 
     if task_name == "parity":
         train_parity(model_name=model_name, K=k, lr=lr)
     else:
-        train_classification(model_name=model_name, K=k, lr=lr)
+        train_classification(model_name=model_name, K=k, lr=lr, from_scratch=from_scratch)
