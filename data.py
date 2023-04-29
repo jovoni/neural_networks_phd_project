@@ -21,7 +21,7 @@ class MnistKDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, idx):
-        X = self.data[idx].float()
+        X = self.data[idx].unsqueeze(0).float()
         y = self.targets[idx].float()
         return X, y
     

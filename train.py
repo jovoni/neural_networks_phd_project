@@ -4,13 +4,14 @@ import torch.nn as nn
 import torch.optim as optim
 from data import get_dataloaders
 import pandas as pd
-from models import twoLNN, fiveLNN
+from models import twoLNN, fiveLNN, LeNet
 from utils import use_gpu_if_possible
 import argparse
 
 MODELS = {
     "twoLNN": twoLNN,
-    "fiveLNN": fiveLNN
+    "fiveLNN": fiveLNN,
+    "LeNet" : LeNet
 }
 
 def train_parity(model_name, K, batch_size=128, nepochs=20, lr=.01):
