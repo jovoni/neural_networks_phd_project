@@ -75,5 +75,5 @@ class fiveLNN(nn.Module):
         return(x)
     
 class LeNet(nn.Module):
-    # to implement
+    # to implement from scratch
     pass
