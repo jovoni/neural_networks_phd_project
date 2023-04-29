@@ -73,3 +73,7 @@ class fiveLNN(nn.Module):
         x = x.view(-1, 28*28*self.K)
         x = self.first_section(x)
         return(x)
+    
+class LeNet(nn.Module):
+    # to implement
+    pass
