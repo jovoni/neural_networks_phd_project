@@ -3,7 +3,7 @@ from train import MODELS, LR_PARITY, LR_SCRATCH_CLASSIFICATION
 import torch
 from data import get_dataloaders
 import numpy as np
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.cross_decomposition import CCA
 
 def extract_representation(model_name, task, K, save=False):
@@ -34,7 +34,7 @@ def extract_representation(model_name, task, K, save=False):
     if save:
         np.save(f"representations/{task}_{model_name}_{K}.npy", all_representations.numpy())
 
-def svcca(model_names, task_names, K, explained_variance = .99):
+def pc_cca(model_names, task_names, K, explained_variance = .99):
 
     Xs = []
     for model_name, task in zip(model_names, task_names):
@@ -49,21 +49,19 @@ def svcca(model_names, task_names, K, explained_variance = .99):
 
 
 def cca(X1, X2):
-    print(X1.shape)
-    print(X2.shape)
-
     n_comps = min(X1.shape[1], X2.shape[1])
-
-    print(n_comps)
-
-    
-    cca = CCA(n_components=n_comps)
+    cca = CCA(n_components=n_comps, max_iter= 1000)
     cca.fit(X1, X2)
-    return cca.correlation_
+
+    X1, X2 = cca.transform(X1, X2)
+    corrs = [np.corrcoef(X1[:, i], X2[:, i])[0, 1] for i in range(n_comps)]   
+
+    return np.mean(corrs)
 
 
-def pca(X, explained_variance = .99):    
-    pca = PCA(n_components=512)
+def pca(X, explained_variance = .99):
+
+    pca = PCA(n_components=X.shape[1])
     pca.fit(X)
 
     i = 0
@@ -86,7 +84,7 @@ if __name__ == "__main__":
     # Same model different task
     for m in MODELS.keys():
         for k in [1,3]:
-            result = svcca([m,m], ['parity', 'classification'], k, explained_variance=.9)
+            result = pc_cca([m,m], ['parity', 'classification'], k, explained_variance=.99)
             print( m, k, result)
 
     # Same task different models
