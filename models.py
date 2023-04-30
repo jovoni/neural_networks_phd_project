@@ -106,3 +106,7 @@ class LeNet(nn.Module):
         x = self.first_section(x)
         x = self.classification(x)
         return(x)
+    
+    def extract_representation(self, x):
+        x = self.first_section(x)
+        return(x)
