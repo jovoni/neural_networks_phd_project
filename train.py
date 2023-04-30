@@ -5,11 +5,14 @@ import torch.optim as optim
 from data import get_dataloaders
 import pandas as pd
 from models import twoLNN, fiveLNN, LeNet
-from utils import use_gpu_if_possible
 import argparse
 
 LR_PARITY = 0.05
-LR_CLASSIFICATION = 0.05
+
+def use_gpu_if_possible():
+    if torch.backends.mps.is_available(): return 'mps'
+    if torch.cuda.is_available(): return 'cuda'
+    return 'cpu'
 
 MODELS = {
     "twoLNN": twoLNN,
@@ -91,8 +94,7 @@ def train_parity(model_name, K, batch_size=128, nepochs=20, lr=.01):
 
 def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01, from_scratch = False):
     # get device
-    device = use_gpu_if_possible()
-    device = "cpu"
+    device = "cpu" # mps not working properly for classification
 
     print(f"Using device : {device}")
     
@@ -105,6 +107,10 @@ def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01, from
         model.load_state_dict(torch.load(trained_model_path))
         for name, param in model.named_parameters():
             if name.startswith("first"):
+                param.requires_grad=False
+
+    for name, param in model.named_parameters():
+            if name.startswith("parity"):
                 param.requires_grad=False
     
     loss_function = nn.CrossEntropyLoss()
@@ -137,7 +143,7 @@ def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01, from
             running_loss += loss.item()
             
             out = torch.argmax(out, dim=1).reshape(-1)
-            train_acc += (out.round() == Y).sum()
+            train_acc += (out.float().round() == Y.float().round()).sum()
 
         # Test Evalutaion
         test_acc = 0
@@ -146,7 +152,7 @@ def train_classification(model_name, K, batch_size=128, nepochs=20, lr=.01, from
             Y = Y.to(device).long()
 
             out = torch.argmax(model.classify(X), dim=1).reshape(-1)
-            test_acc += (out.round() == Y).sum()
+            test_acc += (out.float().round() == Y.float().round()).sum()
 
         train_acc = train_acc / len(dataloaders['train'].dataset)
         test_acc = test_acc / len(dataloaders['test'].dataset)
