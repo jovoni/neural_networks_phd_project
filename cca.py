@@ -1,19 +1,21 @@
 
-from train import MODELS, LR_PARITY, LR_SCRATCH_CLASSIFICATION
+from train import MODELS, LR_PARITY, LR_SCRATCH_CLASSIFICATION, LR_CLASSIFICATION
 import torch
 from data import get_dataloaders
 import numpy as np
-from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
 
-def extract_representation(model_name, task, K, save=False):
+def extract_representation(model_name, task, K, dataloaders, save=False):
     
     if task == "classification":
-        task = "from-scratch-classification"
+        lr = LR_CLASSIFICATION
+    elif task == "from-scratch-classification":
         lr = LR_SCRATCH_CLASSIFICATION
-    else:
-        task = "parity"
+    elif task == "parity":
         lr = LR_PARITY
+    else:
+        raise(ValueError("Task name not recognized"))
 
     model = MODELS[model_name](K)
     # Load pre-trained model freezing certain parameters
@@ -23,8 +25,6 @@ def extract_representation(model_name, task, K, save=False):
     all_representations = []
 
     with torch.no_grad():
-        dataloaders = get_dataloaders("parity", K, 128)
-
         for X, _ in dataloaders['test']:
             representation = model.extract_representation(X)
             all_representations.append(representation)
@@ -38,8 +38,6 @@ def pc_cca(model_names, task_names, K, explained_variance = .99):
 
     Xs = []
     for model_name, task in zip(model_names, task_names):
-        if task == "classification":
-            task = "from-scratch-classification"
         file_name = f"representations/{task}_{model_name}_{K}.npy"
 
         X = np.load(file_name)
@@ -75,16 +73,20 @@ def pca(X, explained_variance = .99):
 
 
 if __name__ == "__main__":
+    dataloaders_1 = get_dataloaders("parity", 1, 128)
+    dataloaders_3 = get_dataloaders("parity", 3, 128)
+
     # Save representations
-    # for m in MODELS.keys():
-    #     for task in ["parity", "classification"]:
-    #         for k in [1,3]:
-    #             extract_representation(m, task, k, save=True)
+    for m in MODELS.keys():
+        for task in ["parity", "from-scratch-classification"]:
+            for k in [1,3]:
+                if k == 1: extract_representation(m, task, k, dataloaders=dataloaders_1, save=True)
+                if k == 3: extract_representation(m, task, k, dataloaders=dataloaders_3, save=True)
     
     # Same model different task
     for m in MODELS.keys():
         for k in [1,3]:
-            result = pc_cca([m,m], ['parity', 'classification'], k, explained_variance=.99)
+            result = pc_cca([m,m], ['parity', 'from-scratch-classification'], k, explained_variance=.99)
             print('same_model:', m, k, result)
 
     # Same task different models
@@ -92,7 +94,7 @@ if __name__ == "__main__":
     for m1 in MODELS.keys():
         for m2 in MODELS.keys():
             if m1 != m2 and m2 not in used_models:
-                    for task in ['parity', 'classification']:
+                    for task in ['parity', 'from-scratch-classification']:
                         for k in [1,3]:
                             result = pc_cca([m1,m2], [task, task], k, explained_variance=.99)
                             print(m1, m2, task, k,result)

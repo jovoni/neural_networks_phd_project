@@ -8,6 +8,7 @@ from models import twoLNN, fiveLNN, LeNet
 import argparse
 
 LR_PARITY = 0.05
+LR_CLASSIFICATION = 0.01
 LR_SCRATCH_CLASSIFICATION = 0.001
 
 def use_gpu_if_possible():

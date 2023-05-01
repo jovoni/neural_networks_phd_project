@@ -1,18 +1,18 @@
-same_model: twoLNN 1 0.20117778166939476
-same_model: twoLNN 3 0.07640285108104602
-same_model: fiveLNN 1 0.05577237045907006
-same_model: fiveLNN 3 0.04555973240356043
-same_model: LeNet 1 0.06386128600068941
-same_model: LeNet 3 0.05077289848904034
-twoLNN fiveLNN parity 1 0.20470127683975667
-twoLNN fiveLNN parity 3 0.0777165520285205
-twoLNN fiveLNN classification 1 0.10045153496451106
-twoLNN fiveLNN classification 3 0.04314542921740356
-twoLNN LeNet parity 1 0.20328645266017673
-twoLNN LeNet parity 3 0.07702452098838206
-twoLNN LeNet classification 1 0.09891533015024195
-twoLNN LeNet classification 3 0.052820844931158954
-fiveLNN LeNet parity 1 0.06825449768803529
-fiveLNN LeNet parity 3 0.052670286605463155
-fiveLNN LeNet classification 1 0.0679984673751176
-fiveLNN LeNet classification 3 0.05413034170124356
+same_model: twoLNN 1 0.6623367460503018
+same_model: twoLNN 3 0.23407441286099304
+same_model: fiveLNN 1 0.5978426330584246
+same_model: fiveLNN 3 0.16908549654509566
+same_model: LeNet 1 0.5020184386978481
+same_model: LeNet 3 0.2130213871294094
+twoLNN fiveLNN parity 1 0.7816863731486681
+twoLNN fiveLNN parity 3 0.37659432538084026
+twoLNN fiveLNN from-scratch-classification 1 0.8121067301389842
+twoLNN fiveLNN from-scratch-classification 3 0.5857610114728152
+twoLNN LeNet parity 1 0.7519666915339562
+twoLNN LeNet parity 3 0.322254360751222
+twoLNN LeNet from-scratch-classification 1 0.6044320405014689
+twoLNN LeNet from-scratch-classification 3 0.5635750905633472
+fiveLNN LeNet parity 1 0.5639297497915343
+fiveLNN LeNet parity 3 0.4654866211287997
+fiveLNN LeNet from-scratch-classification 1 0.7581763359878555
+fiveLNN LeNet from-scratch-classification 3 0.5672304254633481
