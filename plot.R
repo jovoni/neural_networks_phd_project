@@ -1,4 +1,4 @@
-setwd("~/Desktop/dottorato/neural_networks_phd_project")
+setwd("~/Desktop/projects/NN/neural_networks_phd_project")
 library(ggplot2)
 library(tidyverse)
 
@@ -15,15 +15,15 @@ for (k in c(1,3)) {
     rename(dataset = name)
 
   ggplot(df_long, mapping = aes(x=epoch, y=accuracy, fill=dataset, color=dataset)) +
-    geom_line() +
+    geom_line(linewidth = 0.7) +
     geom_point() +
     theme_bw() +
     lims(y=c(0.5,1)) +
-    scale_color_manual(values = c("steelblue", "darkorange"), labels = c("Test", "Train")) +
-    scale_fill_manual(values = c("steelblue", "darkorange"), labels = c("Test", "Train")) +
+    scale_color_manual(values = c("steelblue4", "darkorange2"), labels = c("Test", "Train")) +
+    scale_fill_manual(values = c("steelblue4", "darkorange2"), labels = c("Test", "Train")) +
     ggtitle(paste0("Parity task, twoLNN, k = ", k)) +
     theme(legend.position = "bottom")
-  ggsave(paste0("plots/parity_twoLNN_k", k, ".png"), dpi=300, width = 7, height = 5)
+  ggsave(paste0("plots/parity_twoLNN_k", k, ".png"), dpi=300, width = 6, height = 5)
 }
 
 
@@ -44,11 +44,12 @@ for (k in 1:5) {
 res %>%
   mutate(model = factor(model, levels = c("twoLNN", "fiveLNN", "LeNet"))) %>%
   ggplot(mapping = aes(x=k, y=accuracy, color=model, fill=model)) +
-  geom_line() +
-  geom_point() +
+  geom_line(linewidth = 0.6) +
+  geom_point(size = 1.5) +
   theme_bw() +
   lims(y=c(0,1)) +
   theme(legend.position = "bottom") +
+  scale_color_brewer(palette = 'Dark2') +
   ggtitle("Comparison parity task")
 ggsave("plots/comparison_parity_task.png", dpi=300, width = 6, height = 5)
 
