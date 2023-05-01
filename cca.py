@@ -85,7 +85,17 @@ if __name__ == "__main__":
     for m in MODELS.keys():
         for k in [1,3]:
             result = pc_cca([m,m], ['parity', 'classification'], k, explained_variance=.99)
-            print( m, k, result)
+            print('same_model:', m, k, result)
 
     # Same task different models
+    used_models = []
+    for m1 in MODELS.keys():
+        for m2 in MODELS.keys():
+            if m1 != m2 and m2 not in used_models:
+                    for task in ['parity', 'classification']:
+                        for k in [1,3]:
+                            result = pc_cca([m1,m2], [task, task], k, explained_variance=.99)
+                            print(m1, m2, task, k,result)
+        used_models.append(m1)
+
 
